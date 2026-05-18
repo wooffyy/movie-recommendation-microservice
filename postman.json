@@ -1,0 +1,349 @@
+{
+  "info": {
+    "name": "Movie Recommendation Microservice",
+    "description": "Postman Collection untuk sistem microservice rekomendasi film berbasis TF-IDF + Cosine Similarity. Terdiri dari ML Service (FastAPI, port 8000) dan Express Service (port 3000).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "ml_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "express_url",
+      "value": "http://localhost:3000",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "ML Service (FastAPI - port 8000)",
+      "item": [
+        {
+          "name": "GET /health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ml_url}}/health",
+              "host": ["{{ml_url}}"],
+              "path": ["health"]
+            },
+            "description": "Cek status ML service, info model, dan total film dalam dataset."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"status\": \"ok\",\n  \"model\": \"TF-IDF + Cosine Similarity\",\n  \"dataset\": \"TMDB 5000\",\n  \"total_movies\": 4803\n}"
+            }
+          ]
+        },
+        {
+          "name": "POST /predict",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"The Dark Knight\",\n  \"top_n\": 5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{ml_url}}/predict",
+              "host": ["{{ml_url}}"],
+              "path": ["predict"]
+            },
+            "description": "Mendapatkan rekomendasi film berdasarkan 1 judul film."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"input_title\": \"The Dark Knight\",\n  \"recommendations\": [\n    {\n      \"id\": 272,\n      \"title\": \"The Dark Knight Rises\",\n      \"overview\": \"Following the death of District Attorney Harvey Dent...\",\n      \"genres\": \"Action Crime Drama Thriller\"\n    }\n  ],\n  \"total\": 5,\n  \"service\": \"python-ml-fastapi\"\n}"
+            },
+            {
+              "name": "404 Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"detail\": \"Movie 'Unknown Movie' not found in dataset\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "POST /predict - Film Tidak Ditemukan",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Film Yang Tidak Ada\",\n  \"top_n\": 5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{ml_url}}/predict",
+              "host": ["{{ml_url}}"],
+              "path": ["predict"]
+            },
+            "description": "Test case ketika judul film tidak ditemukan di dataset. Harus return 404."
+          },
+          "response": []
+        },
+        {
+          "name": "POST /batch-predict",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titles\": [\n    \"The Dark Knight\",\n    \"Inception\",\n    \"Interstellar\"\n  ],\n  \"top_n\": 3\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{ml_url}}/batch-predict",
+              "host": ["{{ml_url}}"],
+              "path": ["batch-predict"]
+            },
+            "description": "Mendapatkan rekomendasi film untuk banyak judul sekaligus."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"results\": [\n    {\n      \"input_title\": \"The Dark Knight\",\n      \"recommendations\": [...],\n      \"total\": 3,\n      \"service\": \"python-ml-fastapi\"\n    },\n    {\n      \"input_title\": \"Inception\",\n      \"recommendations\": [...],\n      \"total\": 3,\n      \"service\": \"python-ml-fastapi\"\n    }\n  ],\n  \"total_processed\": 2\n}"
+            }
+          ]
+        },
+        {
+          "name": "POST /batch-predict - Sebagian Tidak Ditemukan",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titles\": [\n    \"The Dark Knight\",\n    \"Film Tidak Ada\",\n    \"Inception\"\n  ],\n  \"top_n\": 3\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{ml_url}}/batch-predict",
+              "host": ["{{ml_url}}"],
+              "path": ["batch-predict"]
+            },
+            "description": "Test case batch dengan sebagian judul tidak ditemukan. Film tidak ditemukan akan di-skip, sisanya tetap diproses."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Express Service (port 3000)",
+      "item": [
+        {
+          "name": "GET /health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{express_url}}/health",
+              "host": ["{{express_url}}"],
+              "path": ["health"]
+            },
+            "description": "Cek status Express service sekaligus status ML service."
+          },
+          "response": [
+            {
+              "name": "200 OK - ML Service Up",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"status\": \"ok\",\n  \"ml_service\": {\n    \"status\": \"ok\",\n    \"model\": \"TF-IDF + Cosine Similarity\",\n    \"dataset\": \"TMDB 5000\",\n    \"total_movies\": 4803\n  }\n}"
+            },
+            {
+              "name": "200 OK - ML Service Down",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"status\": \"ok\",\n  \"ml_service\": \"unreachable\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "POST /recommend",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"The Dark Knight\",\n  \"top_n\": 5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{express_url}}/recommend",
+              "host": ["{{express_url}}"],
+              "path": ["recommend"]
+            },
+            "description": "Endpoint utama Express. Forward request ke ML /predict dan gabungkan response."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"input_title\": \"The Dark Knight\",\n  \"recommendations\": [\n    {\n      \"id\": 272,\n      \"title\": \"The Dark Knight Rises\",\n      \"overview\": \"Following the death of District Attorney Harvey Dent...\",\n      \"genres\": \"Action Crime Drama Thriller\"\n    }\n  ],\n  \"total\": 5,\n  \"timestamp\": \"2026-05-18T10:00:00.000Z\",\n  \"source\": \"express-service → python-ml-fastapi\"\n}"
+            },
+            {
+              "name": "400 Bad Request - Title Kosong",
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"error\": \"Field 'title' wajib diisi\"\n}"
+            },
+            {
+              "name": "503 Circuit Breaker Open",
+              "status": "Service Unavailable",
+              "code": 503,
+              "body": "{\n  \"error\": \"ML Service sedang tidak tersedia, coba lagi nanti\",\n  \"retry_after\": \"25s\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "POST /recommend - Title Kosong",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{express_url}}/recommend",
+              "host": ["{{express_url}}"],
+              "path": ["recommend"]
+            },
+            "description": "Test case validasi input — harus return 400."
+          },
+          "response": []
+        },
+        {
+          "name": "POST /batch-recommend",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titles\": [\n    \"The Dark Knight\",\n    \"Inception\",\n    \"Interstellar\"\n  ],\n  \"top_n\": 3\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{express_url}}/batch-recommend",
+              "host": ["{{express_url}}"],
+              "path": ["batch-recommend"]
+            },
+            "description": "Forward batch request ke ML /batch-predict."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"results\": [\n    {\n      \"input_title\": \"The Dark Knight\",\n      \"recommendations\": [...],\n      \"total\": 3\n    }\n  ],\n  \"total_processed\": 3,\n  \"timestamp\": \"2026-05-18T10:00:00.000Z\",\n  \"source\": \"express-service → python-ml-fastapi\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "POST /batch-recommend - Array Kosong",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titles\": []\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{express_url}}/batch-recommend",
+              "host": ["{{express_url}}"],
+              "path": ["batch-recommend"]
+            },
+            "description": "Test case validasi — array titles kosong harus return 400."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
