@@ -1,0 +1,51 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: movie_recommendation
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./php-service/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  php-service:
+    build: ./php-service
+    container_name: php-service
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  ml-service:
+    build: ./ml-service
+    container_name: ml-service
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+
+  express-service:
+    build: ./express-service
+    container_name: express-service
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      - ml-service
+      - php-service
+    environment:
+      ML_SERVICE_URL: http://ml-service:8000
+      PHP_SERVICE_URL: http://php-service:8080
+
+volumes:        
+  mysql_data:
