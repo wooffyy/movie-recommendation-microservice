@@ -1,21 +1,12 @@
 {
   "info": {
+    "_postman_id": "8ff6ca82-717d-42ed-bc7d-dc88eaea4f0e",
     "name": "Movie Recommendation Microservice",
-    "description": "Postman Collection untuk sistem microservice rekomendasi film berbasis TF-IDF + Cosine Similarity. Terdiri dari ML Service (FastAPI, port 8000) dan Express Service (port 3000).",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    "description": "Postman Collection untuk sistem microservice rekomendasi film berbasis TF-IDF + Cosine Similarity. Terdiri dari ML Service (FastAPI, port 8000), Express Service (port 3000), dan PHP Watchlist Service (port 8080).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "53488075",
+    "_collection_link": "https://go.postman.co/collection/53488075-8ff6ca82-717d-42ed-bc7d-dc88eaea4f0e?source=collection_link"
   },
-  "variable": [
-    {
-      "key": "ml_url",
-      "value": "http://localhost:8000",
-      "type": "string"
-    },
-    {
-      "key": "express_url",
-      "value": "http://localhost:3000",
-      "type": "string"
-    }
-  ],
   "item": [
     {
       "name": "ML Service (FastAPI - port 8000)",
@@ -27,16 +18,37 @@
             "header": [],
             "url": {
               "raw": "{{ml_url}}/health",
-              "host": ["{{ml_url}}"],
-              "path": ["health"]
+              "host": [
+                "{{ml_url}}"
+              ],
+              "path": [
+                "health"
+              ]
             },
             "description": "Cek status ML service, info model, dan total film dalam dataset."
           },
           "response": [
             {
               "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{ml_url}}/health",
+                  "host": [
+                    "{{ml_url}}"
+                  ],
+                  "path": [
+                    "health"
+                  ]
+                },
+                "description": "Cek status ML service, info model, dan total film dalam dataset."
+              },
               "status": "OK",
               "code": 200,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
               "body": "{\n  \"status\": \"ok\",\n  \"model\": \"TF-IDF + Cosine Similarity\",\n  \"dataset\": \"TMDB 5000\",\n  \"total_movies\": 4803\n}"
             }
           ]
@@ -62,22 +74,88 @@
             },
             "url": {
               "raw": "{{ml_url}}/predict",
-              "host": ["{{ml_url}}"],
-              "path": ["predict"]
+              "host": [
+                "{{ml_url}}"
+              ],
+              "path": [
+                "predict"
+              ]
             },
             "description": "Mendapatkan rekomendasi film berdasarkan 1 judul film."
           },
           "response": [
             {
               "name": "200 OK",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"The Dark Knight\",\n  \"top_n\": 5\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{ml_url}}/predict",
+                  "host": [
+                    "{{ml_url}}"
+                  ],
+                  "path": [
+                    "predict"
+                  ]
+                },
+                "description": "Mendapatkan rekomendasi film berdasarkan 1 judul film."
+              },
               "status": "OK",
               "code": 200,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
               "body": "{\n  \"input_title\": \"The Dark Knight\",\n  \"recommendations\": [\n    {\n      \"id\": 272,\n      \"title\": \"The Dark Knight Rises\",\n      \"overview\": \"Following the death of District Attorney Harvey Dent...\",\n      \"genres\": \"Action Crime Drama Thriller\"\n    }\n  ],\n  \"total\": 5,\n  \"service\": \"python-ml-fastapi\"\n}"
             },
             {
               "name": "404 Not Found",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"The Dark Knight\",\n  \"top_n\": 5\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{ml_url}}/predict",
+                  "host": [
+                    "{{ml_url}}"
+                  ],
+                  "path": [
+                    "predict"
+                  ]
+                },
+                "description": "Mendapatkan rekomendasi film berdasarkan 1 judul film."
+              },
               "status": "Not Found",
               "code": 404,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
               "body": "{\n  \"detail\": \"Movie 'Unknown Movie' not found in dataset\"\n}"
             }
           ]
@@ -103,8 +181,12 @@
             },
             "url": {
               "raw": "{{ml_url}}/predict",
-              "host": ["{{ml_url}}"],
-              "path": ["predict"]
+              "host": [
+                "{{ml_url}}"
+              ],
+              "path": [
+                "predict"
+              ]
             },
             "description": "Test case ketika judul film tidak ditemukan di dataset. Harus return 404."
           },
@@ -131,17 +213,52 @@
             },
             "url": {
               "raw": "{{ml_url}}/batch-predict",
-              "host": ["{{ml_url}}"],
-              "path": ["batch-predict"]
+              "host": [
+                "{{ml_url}}"
+              ],
+              "path": [
+                "batch-predict"
+              ]
             },
             "description": "Mendapatkan rekomendasi film untuk banyak judul sekaligus."
           },
           "response": [
             {
               "name": "200 OK",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"titles\": [\n    \"The Dark Knight\",\n    \"Inception\",\n    \"Interstellar\"\n  ],\n  \"top_n\": 3\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{ml_url}}/batch-predict",
+                  "host": [
+                    "{{ml_url}}"
+                  ],
+                  "path": [
+                    "batch-predict"
+                  ]
+                },
+                "description": "Mendapatkan rekomendasi film untuk banyak judul sekaligus."
+              },
               "status": "OK",
               "code": 200,
-              "body": "{\n  \"results\": [\n    {\n      \"input_title\": \"The Dark Knight\",\n      \"recommendations\": [...],\n      \"total\": 3,\n      \"service\": \"python-ml-fastapi\"\n    },\n    {\n      \"input_title\": \"Inception\",\n      \"recommendations\": [...],\n      \"total\": 3,\n      \"service\": \"python-ml-fastapi\"\n    }\n  ],\n  \"total_processed\": 2\n}"
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"results\": [\n    {\n      \"input_title\": \"The Dark Knight\",\n      \"recommendations\": [],\n      \"total\": 3,\n      \"service\": \"python-ml-fastapi\"\n    }\n  ],\n  \"total_processed\": 2\n}"
             }
           ]
         },
@@ -166,17 +283,21 @@
             },
             "url": {
               "raw": "{{ml_url}}/batch-predict",
-              "host": ["{{ml_url}}"],
-              "path": ["batch-predict"]
+              "host": [
+                "{{ml_url}}"
+              ],
+              "path": [
+                "batch-predict"
+              ]
             },
-            "description": "Test case batch dengan sebagian judul tidak ditemukan. Film tidak ditemukan akan di-skip, sisanya tetap diproses."
+            "description": "Film tidak ditemukan akan di-skip, sisanya tetap diproses."
           },
           "response": []
         }
       ]
     },
     {
-      "name": "Express Service (port 3000)",
+      "name": "Express Service (Gateway - port 3000)",
       "item": [
         {
           "name": "GET /health",
@@ -185,22 +306,60 @@
             "header": [],
             "url": {
               "raw": "{{express_url}}/health",
-              "host": ["{{express_url}}"],
-              "path": ["health"]
+              "host": [
+                "{{express_url}}"
+              ],
+              "path": [
+                "health"
+              ]
             },
             "description": "Cek status Express service sekaligus status ML service."
           },
           "response": [
             {
               "name": "200 OK - ML Service Up",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{express_url}}/health",
+                  "host": [
+                    "{{express_url}}"
+                  ],
+                  "path": [
+                    "health"
+                  ]
+                },
+                "description": "Cek status Express service sekaligus status ML service."
+              },
               "status": "OK",
               "code": 200,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
               "body": "{\n  \"status\": \"ok\",\n  \"ml_service\": {\n    \"status\": \"ok\",\n    \"model\": \"TF-IDF + Cosine Similarity\",\n    \"dataset\": \"TMDB 5000\",\n    \"total_movies\": 4803\n  }\n}"
             },
             {
               "name": "200 OK - ML Service Down",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{express_url}}/health",
+                  "host": [
+                    "{{express_url}}"
+                  ],
+                  "path": [
+                    "health"
+                  ]
+                },
+                "description": "Cek status Express service sekaligus status ML service."
+              },
               "status": "OK",
               "code": 200,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
               "body": "{\n  \"status\": \"ok\",\n  \"ml_service\": \"unreachable\"\n}"
             }
           ]
@@ -226,28 +385,125 @@
             },
             "url": {
               "raw": "{{express_url}}/recommend",
-              "host": ["{{express_url}}"],
-              "path": ["recommend"]
+              "host": [
+                "{{express_url}}"
+              ],
+              "path": [
+                "recommend"
+              ]
             },
-            "description": "Endpoint utama Express. Forward request ke ML /predict dan gabungkan response."
+            "description": "Forward ke ML /predict. Dilindungi circuit breaker."
           },
           "response": [
             {
               "name": "200 OK",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"The Dark Knight\",\n  \"top_n\": 5\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{express_url}}/recommend",
+                  "host": [
+                    "{{express_url}}"
+                  ],
+                  "path": [
+                    "recommend"
+                  ]
+                },
+                "description": "Forward ke ML /predict. Dilindungi circuit breaker."
+              },
               "status": "OK",
               "code": 200,
-              "body": "{\n  \"input_title\": \"The Dark Knight\",\n  \"recommendations\": [\n    {\n      \"id\": 272,\n      \"title\": \"The Dark Knight Rises\",\n      \"overview\": \"Following the death of District Attorney Harvey Dent...\",\n      \"genres\": \"Action Crime Drama Thriller\"\n    }\n  ],\n  \"total\": 5,\n  \"timestamp\": \"2026-05-18T10:00:00.000Z\",\n  \"source\": \"express-service → python-ml-fastapi\"\n}"
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"input_title\": \"The Dark Knight\",\n  \"recommendations\": [],\n  \"total\": 5,\n  \"timestamp\": \"2026-05-25T10:00:00.000Z\",\n  \"source\": \"express-service → python-ml-fastapi\"\n}"
             },
             {
               "name": "400 Bad Request - Title Kosong",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"The Dark Knight\",\n  \"top_n\": 5\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{express_url}}/recommend",
+                  "host": [
+                    "{{express_url}}"
+                  ],
+                  "path": [
+                    "recommend"
+                  ]
+                },
+                "description": "Forward ke ML /predict. Dilindungi circuit breaker."
+              },
               "status": "Bad Request",
               "code": 400,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
               "body": "{\n  \"error\": \"Field 'title' wajib diisi\"\n}"
             },
             {
               "name": "503 Circuit Breaker Open",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"The Dark Knight\",\n  \"top_n\": 5\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{express_url}}/recommend",
+                  "host": [
+                    "{{express_url}}"
+                  ],
+                  "path": [
+                    "recommend"
+                  ]
+                },
+                "description": "Forward ke ML /predict. Dilindungi circuit breaker."
+              },
               "status": "Service Unavailable",
               "code": 503,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
               "body": "{\n  \"error\": \"ML Service sedang tidak tersedia, coba lagi nanti\",\n  \"retry_after\": \"25s\"\n}"
             }
           ]
@@ -273,8 +529,12 @@
             },
             "url": {
               "raw": "{{express_url}}/recommend",
-              "host": ["{{express_url}}"],
-              "path": ["recommend"]
+              "host": [
+                "{{express_url}}"
+              ],
+              "path": [
+                "recommend"
+              ]
             },
             "description": "Test case validasi input — harus return 400."
           },
@@ -301,17 +561,52 @@
             },
             "url": {
               "raw": "{{express_url}}/batch-recommend",
-              "host": ["{{express_url}}"],
-              "path": ["batch-recommend"]
+              "host": [
+                "{{express_url}}"
+              ],
+              "path": [
+                "batch-recommend"
+              ]
             },
             "description": "Forward batch request ke ML /batch-predict."
           },
           "response": [
             {
               "name": "200 OK",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"titles\": [\n    \"The Dark Knight\",\n    \"Inception\",\n    \"Interstellar\"\n  ],\n  \"top_n\": 3\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{express_url}}/batch-recommend",
+                  "host": [
+                    "{{express_url}}"
+                  ],
+                  "path": [
+                    "batch-recommend"
+                  ]
+                },
+                "description": "Forward batch request ke ML /batch-predict."
+              },
               "status": "OK",
               "code": 200,
-              "body": "{\n  \"results\": [\n    {\n      \"input_title\": \"The Dark Knight\",\n      \"recommendations\": [...],\n      \"total\": 3\n    }\n  ],\n  \"total_processed\": 3,\n  \"timestamp\": \"2026-05-18T10:00:00.000Z\",\n  \"source\": \"express-service → python-ml-fastapi\"\n}"
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"results\": [],\n  \"total_processed\": 3,\n  \"timestamp\": \"2026-05-25T10:00:00.000Z\",\n  \"source\": \"express-service → python-ml-fastapi\"\n}"
             }
           ]
         },
@@ -336,14 +631,326 @@
             },
             "url": {
               "raw": "{{express_url}}/batch-recommend",
-              "host": ["{{express_url}}"],
-              "path": ["batch-recommend"]
+              "host": [
+                "{{express_url}}"
+              ],
+              "path": [
+                "batch-recommend"
+              ]
             },
             "description": "Test case validasi — array titles kosong harus return 400."
           },
           "response": []
         }
       ]
+    },
+    {
+      "name": "PHP Watchlist (via Gateway)",
+      "item": [
+        {
+          "name": "GET /watchlist",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{express_url}}/watchlist",
+              "host": [
+                "{{express_url}}"
+              ],
+              "path": [
+                "watchlist"
+              ]
+            },
+            "description": "Ambil semua watchlist via Express gateway."
+          },
+          "response": []
+        },
+        {
+          "name": "GET /watchlist/:id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{express_url}}/watchlist/1",
+              "host": [
+                "{{express_url}}"
+              ],
+              "path": [
+                "watchlist",
+                "1"
+              ]
+            },
+            "description": "Ambil satu item watchlist via Express gateway."
+          },
+          "response": []
+        },
+        {
+          "name": "GET /watchlist/:id - Film Tidak Ditemukan",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{express_url}}/watchlist/0",
+              "host": [
+                "{{express_url}}"
+              ],
+              "path": [
+                "watchlist",
+                "0"
+              ]
+            },
+            "description": "Ambil satu item watchlist via Express gateway."
+          },
+          "response": []
+        },
+        {
+          "name": "POST /watchlist",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"movie_id\": \"49026\",\n  \"title\": \"The Dark Knight Rises\",\n  \"overview\": \"Following the death of District Attorney Harvey Dent...\",\n  \"genres\": \"Action Crime Drama Thriller\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{express_url}}/watchlist",
+              "host": [
+                "{{express_url}}"
+              ],
+              "path": [
+                "watchlist"
+              ]
+            },
+            "description": "Tambah film ke watchlist via Express gateway."
+          },
+          "response": []
+        },
+        {
+          "name": "POST /watchlist - Field Tidak Lengkap",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{express_url}}/watchlist",
+              "host": [
+                "{{express_url}}"
+              ],
+              "path": [
+                "watchlist"
+              ]
+            },
+            "description": "Tambah film ke watchlist via Express gateway."
+          },
+          "response": []
+        },
+        {
+          "name": "POST /watchlist - Film Sudah Ada di Watchlist",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"movie_id\": \"49026\",\r\n  \"title\": \"The Dark Knight Rises\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{express_url}}/watchlist",
+              "host": [
+                "{{express_url}}"
+              ],
+              "path": [
+                "watchlist"
+              ]
+            },
+            "description": "Tambah film ke watchlist via Express gateway."
+          },
+          "response": []
+        },
+        {
+          "name": "PUT /watchlist/:id",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"title\": \"The Dark Knight Rises\",\n    \"overview\": \"Following the death of District Attorney Harvey Dent, Batman assumes responsibility for Dent's crimes to protect the late attorney's reputation and is subsequently hunt by the Gotham City Police Department. Eight years later, Batman encounters the mysterious Selina Kyle and the villainous Bane, a new terrorist leader who overwhelms Gotham finest. The Dark Knight resurfaces to protect a city that has branded him an enemy.\",\n    \"genres\": \"Action Crime Drama Thriller\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{express_url}}/watchlist/1",
+              "host": [
+                "{{express_url}}"
+              ],
+              "path": [
+                "watchlist",
+                "1"
+              ]
+            },
+            "description": "Update watchlist via Express gateway."
+          },
+          "response": []
+        },
+        {
+          "name": "PUT /watchlist/:id - Film Tidak Ditemukan",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"The Dark Knight Rises (Updated)\",\n  \"overview\": \"Updated overview...\",\n  \"genres\": \"Action Crime Drama\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{express_url}}/watchlist/0",
+              "host": [
+                "{{express_url}}"
+              ],
+              "path": [
+                "watchlist",
+                "0"
+              ]
+            },
+            "description": "Update watchlist via Express gateway."
+          },
+          "response": []
+        },
+        {
+          "name": "PUT /watchlist/:id - Field Tidak Lengkap",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{express_url}}/watchlist/1",
+              "host": [
+                "{{express_url}}"
+              ],
+              "path": [
+                "watchlist",
+                "1"
+              ]
+            },
+            "description": "Update watchlist via Express gateway."
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE /watchlist/:id",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{express_url}}/watchlist/1",
+              "host": [
+                "{{express_url}}"
+              ],
+              "path": [
+                "watchlist",
+                "1"
+              ]
+            },
+            "description": "Hapus dari watchlist via Express gateway."
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE /watchlist/:id - Film Tidak Ditemukan",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{express_url}}/watchlist/1",
+              "host": [
+                "{{express_url}}"
+              ],
+              "path": [
+                "watchlist",
+                "1"
+              ]
+            },
+            "description": "Hapus dari watchlist via Express gateway."
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "ml_url",
+      "value": "http://localhost:8000"
+    },
+    {
+      "key": "express_url",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "php_url",
+      "value": "http://localhost:8080"
     }
   ]
 }

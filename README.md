@@ -1,6 +1,6 @@
 # Movie Recommendation Microservice
 
-Sistem microservice untuk rekomendasi film berbasis Content-Based Filtering menggunakan TF-IDF + Cosine Similarity, diintegrasikan dengan Express.js service.
+Sistem microservice untuk rekomendasi film berbasis Content-Based Filtering menggunakan TF-IDF + Cosine Similarity, diintegrasikan dengan Express.js Gateway dan PHP Watchlist Service.
 
 ---
 
@@ -9,9 +9,9 @@ Sistem microservice untuk rekomendasi film berbasis Content-Based Filtering meng
 ```
 ├── ml-service/
 │   ├── app/
-│   │   ├── main.py            
-│   │   ├── train_model.py     
-│   │   └── models/            
+│   │   ├── main.py
+│   │   ├── train_model.py
+│   │   └── models/
 │   │       ├── tfidf_vectorizer.pkl
 │   │       ├── cosine_sim.pkl
 │   │       ├── title_to_idx.pkl
@@ -19,10 +19,25 @@ Sistem microservice untuk rekomendasi film berbasis Content-Based Filtering meng
 │   ├── dataset/
 │   │   ├── tmdb_5000_movies.csv
 │   │   └── tmdb_5000_credits.csv
+│   ├── Dockerfile
 │   └── requirements.txt
-└── express-service/
-    ├── index.js
-    └── package.json
+├── express-service/
+│   ├── index.js
+│   ├── package.json
+│   └── Dockerfile
+├── php-service/
+│   ├── config/
+│   │   └── db.php
+│   ├── controllers/
+│   │   └── WatchlistController.php
+│   ├── models/
+│   │   └── Watchlist.php
+│   ├── routes/
+│   │   └── api.php
+│   ├── index.php
+│   ├── init.sql
+│   └── Dockerfile
+└── docker-compose.yml
 ```
 
 ---
@@ -53,27 +68,28 @@ Disimpan dengan joblib dan di-load saat startup FastAPI
 ### Prerequisites
 - Python 3.10+
 - Node.js 18+
-- pip
-
----
+- PHP 8.2+
+- Docker & Docker Compose
 
 ### Clone Repository
 ```bash
 git clone https://github.com/wooffyy/movie-recommendation-microservice.git
+cd movie-recommendation-microservice
 ```
-### 1. ML Service (FastAPI)
 
-#### Install dependencies
+---
+
+### Menjalankan dengan Docker (Recommended)
+
+#### 1. Train model terlebih dahulu
+> Wajib dijalankan sekali sebelum build Docker
 ```bash
 cd ml-service
 pip install -r requirements.txt
+python app/train_model.py
+cd ..
 ```
 
-#### Train model
-> Wajib dijalankan sekali sebelum menjalankan service
-```bash
-python app/train_model.py
-```
 Output yang diharapkan:
 ```
 TF-IDF matrix shape: (4803, 10000)
@@ -83,23 +99,50 @@ Test recommendation for 'The Dark Knight':
 Model saved successfully
 ```
 
-#### Jalankan service
+#### 2. Jalankan semua service
 ```bash
-uvicorn app.main:app --reload --port 8000
+docker-compose up --build
 ```
-Service berjalan di: `http://localhost:8000`  
-Swagger UI: `http://localhost:8000/docs`
+
+Seluruh service akan berjalan di:
+
+| Service | URL |
+|---------|-----|
+| Express Gateway | http://localhost:3000 |
+| ML Service | http://localhost:8000 |
+| PHP Watchlist Service | http://localhost:8080 |
+| Swagger UI | http://localhost:8000/docs |
+
+#### Menghentikan service
+```bash
+docker-compose down        # stop, data MySQL tetap ada
+docker-compose down -v     # stop + hapus data MySQL
+```
 
 ---
 
-### 2. Gateway Service (Express)
+### Menjalankan Manual (Tanpa Docker)
 
+#### 1. ML Service (FastAPI)
+```bash
+cd ml-service
+pip install -r requirements.txt
+python app/train_model.py
+uvicorn app.main:app --reload --port 8000
+```
+
+#### 2. PHP Watchlist Service
+```bash
+cd php-service
+php -S localhost:8080
+```
+
+#### 3. Express Gateway
 ```bash
 cd express-service
 npm install
 node index.js
 ```
-Service berjalan di: `http://localhost:3000`
 
 ---
 
@@ -113,13 +156,28 @@ Service berjalan di: `http://localhost:3000`
 | POST | `/predict` | Rekomendasi berdasarkan 1 judul film |
 | POST | `/batch-predict` | Rekomendasi untuk banyak judul sekaligus |
 
-### Express Service (port 3000)
+### PHP Watchlist Service (port 8080)
 
 | Method | Endpoint | Deskripsi |
 |--------|----------|-----------|
-| GET | `/health` | Status Express + status ML service |
-| POST | `/recommend` | Forward ke ML `/predict` |
-| POST | `/batch-recommend` | Forward ke ML `/batch-predict` |
+| GET | `/watchlist` | Ambil semua item watchlist |
+| GET | `/watchlist/{id}` | Ambil satu item watchlist |
+| POST | `/watchlist` | Tambah film ke watchlist |
+| PUT | `/watchlist/{id}` | Update item watchlist |
+| DELETE | `/watchlist/{id}` | Hapus item dari watchlist |
+
+### Express Gateway (port 3000)
+
+| Method | Endpoint | Forward ke |
+|--------|----------|------------|
+| GET | `/health` | — (cek status ML service) |
+| POST | `/recommend` | ML `/predict` |
+| POST | `/batch-recommend` | ML `/batch-predict` |
+| GET | `/watchlist` | PHP `/watchlist` |
+| GET | `/watchlist/:id` | PHP `/watchlist/{id}` |
+| POST | `/watchlist` | PHP `/watchlist` |
+| PUT | `/watchlist/:id` | PHP `/watchlist/{id}` |
+| DELETE | `/watchlist/:id` | PHP `/watchlist/{id}` |
 
 ---
 
@@ -146,7 +204,7 @@ Service berjalan di: `http://localhost:3000`
     }
   ],
   "total": 3,
-  "timestamp": "2026-05-18T10:00:00.000Z"
+  "timestamp": "2026-05-25T10:00:00.000Z"
 }
 ```
 
@@ -164,17 +222,54 @@ Service berjalan di: `http://localhost:3000`
   "results": [
     {
       "input_title": "The Dark Knight",
-      "recommendations": [...],
+      "recommendations": [],
       "total": 2
     },
     {
       "input_title": "Inception",
-      "recommendations": [...],
+      "recommendations": [],
       "total": 2
     }
   ],
   "total_processed": 2,
-  "timestamp": "2026-05-18T10:00:00.000Z",
+  "timestamp": "2026-05-25T10:00:00.000Z"
 }
 ```
 
+### POST /watchlist
+**Request:**
+```json
+{
+  "movie_id": 272,
+  "title": "The Dark Knight Rises",
+  "overview": "Following the death of District Attorney Harvey Dent...",
+  "genres": "Action Crime Drama Thriller"
+}
+```
+**Response:**
+```json
+{
+  "message": "Film berhasil ditambahkan ke watchlist",
+  "data": {
+    "id": 1,
+    "movie_id": 272,
+    "title": "The Dark Knight Rises",
+    "overview": "Following the death of District Attorney Harvey Dent...",
+    "genres": "Action Crime Drama Thriller",
+    "added_at": "2026-05-25 10:00:00"
+  }
+}
+```
+
+---
+
+## Circuit Breaker
+
+Express Gateway mengimplementasikan circuit breaker sederhana untuk koneksi ke ML Service:
+
+| Parameter | Value |
+|-----------|-------|
+| Threshold | 3 kali gagal berturut-turut |
+| Cooldown | 30 detik |
+
+Apabila ML Service gagal dijangkau sebanyak 3 kali, circuit breaker akan terbuka dan seluruh request ke `/recommend` dan `/batch-recommend` akan langsung dikembalikan dengan status 503 tanpa meneruskan request ke ML Service, hingga cooldown selesai.
