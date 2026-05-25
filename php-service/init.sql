@@ -1,0 +1,8 @@
+CREATE TABLE watchlist (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    movie_id INT NOT NULL UNIQUE,
+    title VARCHAR(255) NOT NULL,
+    overview TEXT,
+    genres VARCHAR(255),
+    added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
